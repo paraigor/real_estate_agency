@@ -8,15 +8,24 @@ def fill_owner_pure_phone_field(apps, schema_editor):
     Flat = apps.get_model("property", "Flat")
     for flat in Flat.objects.all():
         try:
-            normalized_number = phonenumbers.parse(
+            phone_number = phonenumbers.parse(
                 flat.owners_phonenumber, "RU"
             )
         except phonenumbers.phonenumberutil.NumberParseException:
-            normalized_number = phonenumbers.parse("+70000000000", "RU")
+            phone_number = phonenumbers.parse("+70000000000", "RU")
 
-        flat.owner_pure_phone = phonenumbers.format_number(
-            normalized_number, phonenumbers.PhoneNumberFormat.E164
-        )
+        if not phonenumbers.is_possible_number(phone_number):
+            normalized_number = phonenumbers.format_number(
+                phone_number, phonenumbers.PhoneNumberFormat.E164
+            )
+            for _ in range(12 - len(normalized_number)):
+                normalized_number += "0"
+        else:
+            normalized_number = phonenumbers.format_number(
+                phone_number, phonenumbers.PhoneNumberFormat.E164
+            )
+
+        flat.owner_pure_phone = normalized_number
         flat.save(update_fields=["owner_pure_phone"])
 
 
