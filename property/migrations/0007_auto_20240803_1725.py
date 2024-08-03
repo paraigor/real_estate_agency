@@ -6,6 +6,7 @@ from django.db import migrations
 
 def fill_owner_pure_phone_field(apps, schema_editor):
     Flat = apps.get_model("property", "Flat")
+    pure_number_len = 12
     for flat in Flat.objects.all():
         try:
             phone_number = phonenumbers.parse(
@@ -18,7 +19,7 @@ def fill_owner_pure_phone_field(apps, schema_editor):
             normalized_number = phonenumbers.format_number(
                 phone_number, phonenumbers.PhoneNumberFormat.E164
             )
-            for _ in range(12 - len(normalized_number)):
+            for _ in range(pure_number_len - len(normalized_number)):
                 normalized_number += "0"
         else:
             normalized_number = phonenumbers.format_number(
