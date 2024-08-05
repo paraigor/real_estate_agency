@@ -6,19 +6,19 @@ from django.db import migrations
 
 def fill_owner_pure_phone_field(apps, schema_editor):
     Flat = apps.get_model("property", "Flat")
-    flat_set = Flat.objects.all()
-    for flat in flat_set.iterator():
+
+    flats = Flat.objects.all()
+    for flat in flats.iterator():
         try:
             phone_number = ph.parse(flat.owners_phonenumber, "RU")
+            if ph.is_valid_number(phone_number):
+                normalized_number = ph.format_number(
+                    phone_number, ph.PhoneNumberFormat.E164
+                )
+            else:
+                normalized_number = None
         except ph.phonenumberutil.NumberParseException:
-            phone_number = ph.parse("123", "RU")
-
-        if ph.is_valid_number(phone_number):
-            normalized_number = ph.format_number(
-                phone_number, ph.PhoneNumberFormat.E164
-            )
-        else:
-            normalized_number = ""
+            normalized_number = None
 
         flat.update(owner_pure_phone=normalized_number)
 
